@@ -4,6 +4,7 @@ import Mathlib.NumberTheory.LegendreSymbol.JacobiSymbol
 import Mathlib.NumberTheory.LegendreSymbol.QuadraticReciprocity
 import Mathlib.Tactic
 import Mathlib.Init.Data.Int.CompLemmas
+import Mathlib.Data.Int.Parity
 
 open ZMod legendreSym Nat Int List
 
@@ -103,26 +104,99 @@ lemma factorization_eq_prod_factorization_neg (h : a < 0): (legendreSym p a) = (
     norm_cast
   assumption
 
--- def legendreAlg_reciprocity : ℤ :=
---    if _ : a = 0 then 0
---    else
---        if h₁ : p = 2 then legendreSym p (a % p)
---        else
---           if _ : a > 0 then
---               List.prod <|
---                 (natAbs a).factors.pmap
---                     (fun q hq' =>
---                         if h₂ : q = 2 then legendreSym p 2
---                         else
---                           quadratic_reciprocity' h₁ h₂)
---                     (fun b hq' _ _ => by {
+variable (hp' : p ≠ 2) in
+lemma lengedre_eq_reciprocity_map_odd_map (h : a ≠ 0) (h' : Odd a)
+  : map (fun a => legendreSym p a) (Lean.Internal.coeM a.natAbs.factors)
+      = (pmap (fun q hq =>
+                  let hq' : Fact (Nat.Prime q) := ⟨prime_of_mem_factors hq⟩
+                  (-1) ^ (q / 2 * (p / 2)) * legendreSym q p) (factors (natAbs a))
+                  (fun _ x => x)) := by
+    apply List.ext
+    intros n
+    simp only [get?_map, Nat.odd_iff_not_even, @get?_pmap, ← @Option.map_eq_map, Option.pmap]
+    split
+    case a.h_1 _ _ _ _ o _ =>
+      simp only [get?_eq_none] at o
+      rw [Lean.Internal.coeM, @bind_pure_comp]
+      simp only [map_eq_map, get?_map, Option.map_eq_map, Option.map_map,
+        Option.map_eq_none', get?_eq_none]
+      exact o
+    case a.h_2 _ _ _ o₄ o₅ o₆ _ =>
+      simp only [Option.map_eq_map, Nat.odd_iff_not_even, Option.map_eq_some']
+      use o₄
+      constructor
+      · rw[Lean.Internal.coeM, @bind_pure_comp]
+        simp only [map_eq_map, get?_map, Option.map_eq_some']
+        exact ⟨o₄, ⟨o₆ ,rfl ⟩⟩
+      ·
+        letI : Fact (Nat.Prime o₄) := ⟨prime_of_mem_factors (o₅ o₄ rfl)⟩
+        have : o₄ ≠ 2 := by
+            by_contra s
+            have : Even (a.natAbs) ∧ Odd (a.natAbs) := {
+              left := even_iff_two_dvd.mpr <|
+                (mem_factors_iff_dvd (natAbs_ne_zero.mpr h) Nat.prime_two).mp
+                (o₅ 2 (congrArg some s))
+              right := Odd.natAbs h' }
+            simp only [Nat.odd_iff_not_even, and_not_self] at this
+        rw [quadratic_reciprocity' this hp']
 
---                     })
---           else ((natAbs a).factors.pmap
---                   (fun q _ => (-1) ^ (p / 2 * (q / 2)) * legendreSym p q)
---                   (fun _ _ => fact_iff.mp hp)).prod
---                     * legendreSym p (-1)
+variable (hp' : p ≠ 2) in
+lemma legendre_eq_quadratic_reciprocity_pos_odd (h : a > 0) (h' : Odd a)
+  : legendreSym p a = List.prod (a.natAbs.factors.pmap
+    (fun q (hq : q ∈ a.natAbs.factors) =>
+        let hq' : Fact (Nat.Prime q) := ⟨prime_of_mem_factors hq⟩
+        (-1) ^ (q / 2 * (p / 2)) * legendreSym q p)
+    (fun _ b => b)) := by
+        simp only [factorization_eq_prod_factorization_pos p a h,
+          map_eq_map, pmap_eq_map, map_map, Nat.odd_iff_not_even]
+        rw [lengedre_eq_reciprocity_map_odd_map]
+        assumption'
+        exact Int.ne_of_gt h
 
+variable (hp' : p ≠ 2) in
+lemma legendre_eq_quadratic_reciprocity_neg_odd (h : a < 0) (h' : Odd a)
+  : legendreSym p a = (legendreSym p (-1)) * List.prod (a.natAbs.factors.pmap
+    (fun q (hq : q ∈ a.natAbs.factors) =>
+        let hq' : Fact (Nat.Prime q) := ⟨prime_of_mem_factors hq⟩
+        (-1) ^ (q / 2 * (p / 2)) * legendreSym q p)
+    (fun _ b => b)) := by
+        simp only [factorization_eq_prod_factorization_neg p a h,
+          map_eq_map, pmap_eq_map, map_map, Nat.odd_iff_not_even]
+        rw [lengedre_eq_reciprocity_map_odd_map]
+        assumption'
+        exact Int.ne_of_lt h
+
+variable (hp' : p ≠ 2) in
+lemma lengedre_eq_reciprocity_map
+  : map (fun a => legendreSym p a) (Lean.Internal.coeM a.natAbs.factors)
+      = (pmap (fun q hq =>
+                  if q = 2 then legendreSym p 2
+                  else
+                      let hq' : Fact (Nat.Prime q) := ⟨prime_of_mem_factors hq⟩
+                      (-1) ^ (q / 2 * (p / 2)) * legendreSym q p) (a.natAbs.factors)
+              (fun _ x =>x)) := by
+    apply List.ext
+    intros n
+    simp only [get?_map, Nat.odd_iff_not_even, @get?_pmap, ← @Option.map_eq_map, Option.pmap]
+    split
+    case a.h_1 _ _ _ _ o _ =>
+      simp only [get?_eq_none] at o
+      rw [Lean.Internal.coeM, @bind_pure_comp]
+      simp only [map_eq_map, get?_map, Option.map_eq_map, Option.map_map,
+        Option.map_eq_none', get?_eq_none]
+      exact o
+    case a.h_2 _ _ _ o₄ o₅ o₆ _ =>
+      simp only [Option.map_eq_map, Nat.odd_iff_not_even, Option.map_eq_some']
+      use o₄
+      constructor
+      · rw[Lean.Internal.coeM, @bind_pure_comp]
+        simp only [map_eq_map, get?_map, Option.map_eq_some']
+        exact ⟨o₄, ⟨o₆ ,rfl ⟩⟩
+      ·
+        letI : Fact (Nat.Prime o₄) := ⟨prime_of_mem_factors (o₅ o₄ rfl)⟩
+        split_ifs
+        case pos h => simp [h]
+        case neg h => exact quadratic_reciprocity' h hp'
 
 def legendreAlg_reciprocity : ℤ :=
    if _ : a = 0 then 0
@@ -131,33 +205,52 @@ def legendreAlg_reciprocity : ℤ :=
        else
           if _ : a > 0 then
               List.prod <|
-                   let f := fun (q : ℕ) (_ : Fact q.Prime) =>
-                      if _ : q = 2 then legendreSym p 2
-                      else (-1) ^ (p / 2 * (q / 2)) * legendreSym q p
-                   (natAbs a).factors.pmap f (fun _ hq => ⟨prime_of_mem_factors hq ⟩)
+                   (pmap (fun q hq =>
+                  if q = 2 then legendreSym p 2
+                  else
+                      let _ : Fact (Nat.Prime q) := ⟨prime_of_mem_factors hq⟩
+                      (-1) ^ (q / 2 * (p / 2)) * legendreSym q p) (a.natAbs.factors)
+              (fun _ x =>x))
           else
               (legendreSym p (-1)) *
               (List.prod <|
-                   let f := fun (q : ℕ) (_ : Fact q.Prime) =>
-                      if _ : q = 2 then legendreSym p 2
-                      else (-1) ^ (p / 2 * (q / 2)) * legendreSym q p
-                   (natAbs a).factors.pmap f (fun _ hq => ⟨prime_of_mem_factors hq ⟩))
+                   (pmap (fun q hq =>
+                  if q = 2 then legendreSym p 2
+                  else
+                      let _ : Fact (Nat.Prime q) := ⟨prime_of_mem_factors hq⟩
+                      (-1) ^ (q / 2 * (p / 2)) * legendreSym q p) (a.natAbs.factors)
+                  (fun _ x =>x)))
 
--- @[csimp]
--- theorem legendreAlg_eq_legendreSym : @legendreSym = @legendreAlg_reciprocity := by {
---   ext p hp a
---   dsimp only [legendreAlg_reciprocity]
---   split_ifs
---   case pos h => simp [h]
---   case pos h h'=> exact legendreSym.mod p a
---   case neg h h' h'' => {
---     simp
---     have : a = (-1) * (-a) := by simp
---     nth_rewrite 1 [this]
---     rw [legendreSym.mul]
---     congr 1
---     rw [@pmap_eq_map_attach]
+@[csimp]
+theorem legendreAlg_eq_legendreSym : @legendreSym = @legendreAlg_reciprocity := by {
+  ext p hp a
+  simp only [legendreAlg_reciprocity]
+  split_ifs
+  case pos h => rw [h] ; simp
+  case pos => exact legendreSym.mod p a
+  case pos h h' k => {
 
-
---   }
--- }
+    have := lengedre_eq_reciprocity_map p a h'
+    simp at this
+    rw [←this]
+    rw [factorization_eq_prod_factorization_pos]
+    assumption'
+    simp only [pmap_eq_map]
+  }
+  case neg h h' k=> {
+    rw [legendre_neg_mul']
+    congr 1
+    have := lengedre_eq_reciprocity_map p a h'
+    simp at this
+    rw [←this]
+    rw [factorization_eq_prod_factorization_pos p (a.natAbs)]
+    simp only [coe_natAbs, pmap_eq_map]
+    have : natAbs |a| = natAbs a := by {
+      exact natAbs_abs a
+    }
+    rw [this]
+    simp ; exact h
+    by_contra kk
+    exact ltByCases a 0 kk h k
+  }
+}
