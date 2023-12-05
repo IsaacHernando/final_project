@@ -1,1 +1,1 @@
-def hello : String := "world"
+def hello := "world"
