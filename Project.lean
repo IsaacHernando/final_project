@@ -1,9 +1,7 @@
 import Mathlib.NumberTheory.LegendreSymbol.QuadraticReciprocity
 import Mathlib.Init.Data.Int.CompLemmas
 
-open Nat Int List
-
-namespace legendreSym
+open legendreSym Nat Int List
 
 variable (p : ℕ) [hp : Fact p.Prime]
 
@@ -12,7 +10,6 @@ lemma pos_eq_natAbs {a : ℤ} (h : a > 0) : a = a.natAbs := by
   simp only [ofNat_eq_coe, natAbs_ofNat]
   norm_cast at h
 
-@[simp]
 lemma legendre_eq_natAbs {a : ℤ} (h : a > 0)
   : legendreSym p a = legendreSym p (natAbs a) := by rw [← pos_eq_natAbs] ; exact h
 
@@ -24,7 +21,6 @@ lemma legendre_neg_mul (h : a ≤ 0) (k : a ≠ 0)
     rw [this]
     exact legendreSym.mul p (-1) ↑(natAbs a)
 
-@[simp]
 lemma natAbs_legendre_eq_prod_factors {a : ℤ} (h : a ≠ 0)
   : legendreSym p a.natAbs
       = List.prod (a.natAbs.factors.pmap (fun q _ => @legendreSym p _ q) (fun _ _ => hp) ):= by
