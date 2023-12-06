@@ -31,7 +31,7 @@ lemma natAbs_legendre_eq_prod_factors {a : ℤ} (h : a ≠ 0)
   nth_rewrite 1 [←  prod_factors (natAbs_ne_zero.mpr h)]
   rw [Lean.Internal.coeM, @bind_pure_comp]
   simp only [map_eq_map, pmap_eq_map, map_map]
-  induction (factors (natAbs a))
+  induction factors (natAbs a)
   case nil => simp only [prod_nil, Nat.cast_one, at_one, map_nil]
   case cons _ _ c =>
     simp only [map_cons, prod_cons, Function.comp_apply]
