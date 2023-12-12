@@ -1,4 +1,4 @@
-# final_Project
+# final_Project - Legendre Symbol Algorthm
 
 1. The topic of your project. State the relevant background, definitions, and theorems, using natural language. Add any necessary references.
 2. The structure of the lean project itself. How is your code organized?
