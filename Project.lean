@@ -12,19 +12,19 @@ lemma pos_eq_natAbs {a : ℤ} (h : a > 0) : a = a.natAbs := by
   norm_cast at h
 
 lemma legendre_eq_natAbs {a : ℤ} (h : a > 0)
-  : legendreSym p a = legendreSym p (natAbs a) := by rw [← pos_eq_natAbs h]
+  : legendreSym p a = legendreSym p a.natAbs := by rw [← pos_eq_natAbs h]
 
 lemma legendre_neg_mul (h : a ≤ 0) (k : a ≠ 0)
   : legendreSym p a = (legendreSym p (-1)) * (legendreSym p (a.natAbs)) := by
     have : a = -1 * -a := by simp only [mul_neg, neg_mul, one_mul, neg_neg]
     nth_rewrite 1 [this]
-    have : -a = (natAbs a) := by simpa using (pos_eq_natAbs (Int.neg_pos_of_neg (Ne.lt_of_le k h)))
+    have : -a = a.natAbs := by simpa using (pos_eq_natAbs (Int.neg_pos_of_neg (Ne.lt_of_le k h)))
     rw [this]
-    exact legendreSym.mul p (-1) (natAbs a)
+    exact legendreSym.mul p (-1) a.natAbs
 
 lemma natAbs_legendre_eq_prod_factors {a : ℤ} (h : a ≠ 0)
   : legendreSym p a.natAbs
-      = List.prod (a.natAbs.factors.pmap (fun q _ => @legendreSym p _ q) (fun _ _ => hp) ):= by
+      = List.prod (a.natAbs.factors.pmap (fun q _ => @legendreSym p _ q) (fun _ _ => hp)):= by
   nth_rewrite 1 [←  prod_factors (natAbs_ne_zero.mpr h)]
   rw [Lean.Internal.coeM, @bind_pure_comp]
   simp only [map_eq_map, pmap_eq_map, map_map]
@@ -79,7 +79,7 @@ def legendre_reciprocity (a : ℤ) : ℤ :=
         else (χ₄ p) * (legendreSym_of_reciprocity_map p a).prod
 
 @[csimp]
-theorem legendreAlg_eq_legendreSym : @legendreSym = @legendre_reciprocity := by
+theorem legendreSym_eq_legendre_reciprocity : @legendreSym = @legendre_reciprocity := by
   ext p hp a
   simp only [legendre_reciprocity]
   split_ifs
