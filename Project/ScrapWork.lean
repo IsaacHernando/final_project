@@ -2,6 +2,31 @@
 -- import Mathlib.Init.Data.Int.CompLemmas
 -- import Mathlib.NumberTheory.LegendreSymbol.ZModChar
 
+/- def legendre_reciprocity (p : ℕ) [Fact p.Prime] (a : ℤ) : ℤ :=
+--    if _ : a = 0 then 0
+--    else if _ : p = 2 then legendreSym p (a % p)
+--    else if _ : a > 0 then (legendreSym_of_reciprocity_map p a).prod
+--    else (χ₄ p) * (legendreSym_of_reciprocity_map p a).prod
+
+-- @[csimp]
+-- theorem legendreSym_eq_legendre_reciprocity : @legendreSym = @legendre_reciprocity := by
+--   ext p hp a
+--   simp only [legendre_reciprocity]
+--   split_ifs
+--   case pos h => rw [h, at_zero]
+--   case pos => exact legendreSym.mod p a
+--   case pos h h' k =>
+--     rw [←factors_list_eq_reciprocity_map,
+--       pos_eq_natAbs (Int.nonneg_of_pos k), natAbs_legendre_eq_prod_factors p h, pmap_eq_map]
+--     dsimp [legendreSym_of_factors_list]
+--     assumption
+--   case neg h h' k =>
+--     simp only [gt_iff_lt, not_lt] at k
+--     rw [←factors_list_eq_reciprocity_map, legendre_neg_mul p,
+--       natAbs_legendre_eq_prod_factors, pmap_eq_map, legendreSym.at_neg_one h']
+--     congr 1
+--     assumption'-/
+
 -- open legendreSym Nat Int List ZMod
 
 -- lemma pos_eq_natAbs {a : ℤ} (h : a ≥ 0) : a = a.natAbs := by

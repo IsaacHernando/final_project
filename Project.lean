@@ -80,6 +80,11 @@ decreasing_by
   simp_wf
   exact Nat.lt_of_lt_of_le (mod_lt p Fin.size_pos') (le_of_mem_factors hq)
 
+def reciprocity_recursion' (p : ℕ) [Fact p.Prime] (a : ℤ) : ℤ :=
+  if _ : p = 2 then legendreSym p (a % p)
+  else if _ : a < 0 then (χ₄ p) * (reciprocity_recursion p a.natAbs)
+  else (reciprocity_recursion p a.natAbs)
+
 lemma reciprocity_recursion_eq_legendreSym (p : ℕ) [hp : Fact p.Prime] (a : ℕ) :
   reciprocity_recursion p a = legendreSym p a := by
     unfold reciprocity_recursion
@@ -102,11 +107,6 @@ decreasing_by
   simp_wf
   apply Nat.lt_of_lt_of_le (mod_lt p (pos_of_mem_factors hx)) (le_of_mem_factors hx)
 
-def reciprocity_recursion' (p : ℕ) [Fact p.Prime] (a : ℤ) : ℤ :=
-  if _ : p = 2 then legendreSym p (a % p)
-  else if _ : a < 0 then (χ₄ p) * (reciprocity_recursion p a.natAbs)
-  else (reciprocity_recursion p a.natAbs)
-
 @[csimp]
 lemma reciprocity_recursion_eq_legendreSym' :
   @reciprocity_recursion' = @legendreSym := by
@@ -120,28 +120,3 @@ lemma reciprocity_recursion_eq_legendreSym' :
       symm
       nth_rewrite 1 [pos_eq_natAbs (Int.not_lt.mp h)]
       rw [reciprocity_recursion_eq_legendreSym]
-
--- def legendre_reciprocity (p : ℕ) [Fact p.Prime] (a : ℤ) : ℤ :=
---    if _ : a = 0 then 0
---    else if _ : p = 2 then legendreSym p (a % p)
---    else if _ : a > 0 then (legendreSym_of_reciprocity_map p a).prod
---    else (χ₄ p) * (legendreSym_of_reciprocity_map p a).prod
-
--- @[csimp]
--- theorem legendreSym_eq_legendre_reciprocity : @legendreSym = @legendre_reciprocity := by
---   ext p hp a
---   simp only [legendre_reciprocity]
---   split_ifs
---   case pos h => rw [h, at_zero]
---   case pos => exact legendreSym.mod p a
---   case pos h h' k =>
---     rw [←factors_list_eq_reciprocity_map,
---       pos_eq_natAbs (Int.nonneg_of_pos k), natAbs_legendre_eq_prod_factors p h, pmap_eq_map]
---     dsimp [legendreSym_of_factors_list]
---     assumption
---   case neg h h' k =>
---     simp only [gt_iff_lt, not_lt] at k
---     rw [←factors_list_eq_reciprocity_map, legendre_neg_mul p,
---       natAbs_legendre_eq_prod_factors, pmap_eq_map, legendreSym.at_neg_one h']
---     congr 1
---     assumption'
