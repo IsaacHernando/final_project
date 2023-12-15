@@ -24,8 +24,10 @@ A main portion of the project consists of defining `legendre_reciprocity` (which
 
 # Main Definitions and Results
 1. `f(p, a) = reciprocity_recursion p a` is the main algorithms to compute the Legendre Symbol. Other then a few easy cases, the main steps are the following:
-        (i) : Take a prime number `p` and a positive integer `a`
-        (ii) : For each prime factor `q` of `a`, we compute $\Bigl(\frac{q}{p}\Bigr)$ via quadratic reciprocity recursively. That is, $$q \mapsto (-1)^{ \frac{p-1}{2} \cdot \frac{q-1}{2}} \cdot f(q, p \mod q)$$
+$\begin{enumerate}
+    \item[(i)] Take a prime number `p` and a positive integer `a`
+    \item[(ii)] For each prime factor `q` of `a`, we compute $\Bigl(\frac{q}{p}\Bigr)$ via quadratic reciprocity recursively. That is, $$q \mapsto (-1)^{ \frac{p-1}{2} \cdot \frac{q-1}{2}} \cdot f(q, p \mod q)$$
+\end{enumerate}$
 
 
 
