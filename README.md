@@ -1,6 +1,6 @@
 # final_Project - Legendre Symbol Algorithm
 
-This file contains an algorithm to compute the Legendre Symbol. Fix a prime number `p` and an integer `a`. 
+This file contains a recursive algorithm to compute the Legendre Symbol. Fix a prime number `p` and an integer `a`. 
 
 # Definitions
 
@@ -17,14 +17,16 @@ A main portion of the project consists of defining `legendre_reciprocity` (which
 2. `legendre_neg_mul` proves that `legendreSym p a = (legendreSym p (-1)) * (legendreSym p a.natAbs)` if `a` is negative or zero.
 3. `natAbs_legendre_eq_prod_factors` proves that `legendreSym p a` for a positive integer `a` is the same as multiplying all Legendre Symbols $\Bigl(\frac{q}{p}\Bigr)$ where `q` is a prime factor of `a`.
 
-# Important definitions
+# Important definitions / lemmas
 1. `legendreSym_of_factors_list` sends an integer `a` to a list of the Legendre Symbols of each factor of `a` with respect to a prime `p`. For example, `12 --> [legendreSym p 2, legendreSym p 2,  legendreSym p 3]`. 
 2. `legendreSym_of_reciprocity_map` sends an integer `a` to the same list as `legendreSym_of_factors_list`. However, each factor of `a` is mapped to its Legendre Symbol using quadratic reciprocity. For example, `12 --> [χ₈ p, χ₈ p,  (-1) ^ (3 / 2 * (p / 2)) * legendreSym 3 p]`. 
 3. `factors_list_eq_reciprocity_map` proves that `legendreSym_of_factors_list` is the same list as `legendreSym_of_reciprocity_map`.
 
 # Main Definitions and Results
-1. `legendre_reciprocity` is the main algorithm to compute the Legendre Symbol. `legendre_reciprocity p a` is 0 if `a = 0`. If `p=2`, then we compute the `legendreSym p (a % 2)`, where `a % 2` is 1 or 0.  
+1. `reciprocity_recursion` is the main algorithms to compute the Legendre Symbol. Other then a few easy cases, the main steps are the following:
+        (i) : Take a prime number `p` and a positive integer `a`
+        (ii) : For each prime factor `q` of `a`, we compute $\Bigl(\frac{q}{p}\Bigr)$ via quadratic reciprocity recursively. That is, $$q \mapsto (-1)^{ \frac{p-1}{2} \cdot \frac{q-1}{2}} \cdot reciprocity_recursion q (p mod q)$$
 
-Otherwise, `legendre_reciprocity p a` multiplies every entry in `legendreSym_of_reciprocity_map`. This value is multiplied by `(χ₄ p)` if `a` is negative.
+
 
 2. `legendreSym_eq_legendre_reciprocity` proves that `legendre_reciprocity` outputs the same value `legendreSym`. 
