@@ -2,14 +2,40 @@ import Mathlib.NumberTheory.LegendreSymbol.QuadraticReciprocity
 import Mathlib.Init.Data.Int.CompLemmas
 import Mathlib.NumberTheory.LegendreSymbol.ZModChar
 
+/-!
+# final_Project - Legendre Symbol Algorithm.
+
+## Main results
+
+This file contains a recursive algorithm to compute the Legendre Symbol,
+  and it also contains a proof that the algorithm is correst. See `reciprocity_recursion'`, and
+  `reciprocity_recursion_eq_legendreSym'`.
+
+For a fixed integer `a` and a prime `p`, it is also proven that mapping each `q ∈ a.natAbs.factors`
+to `legendreSym p q` is the same as mapping each `q ∈ a.natAbs.factors` to `(-1) ^ (q / 2 * (p / 2)) * legendreSym q p`
+(via quadratic reciprocity).
+
+## Implementation notes
+The proofs use results for computing Legendre Symbols at `-1` and `2` from
+`Mathlib.NumberTheory.LegendreSymbol.QuadraticReciprocity`. That is, it is used that `legendreSym p 2 = χ₈ p` and
+`legendreSym p (-1) = χ₄ p`.
+
+## References
+1. Mathlib
+-/
+
 open legendreSym Nat Int List ZMod
 
+/-- a positive integer `a` is equal to its absolute value `a.natAbs` -/
 lemma pos_eq_natAbs {a : ℤ} (h : a ≥ 0) : a = a.natAbs := by
   cases a
   simp only [ofNat_eq_coe, natAbs_ofNat]
   norm_cast at h
 
-lemma legendre_neg_mul (p : ℕ) [hp : Fact p.Prime] (h : a ≤ 0)
+variable (p : ℕ) [hp : Fact p.Prime]
+
+/-- the `Legendre Symbol` is multiplicative -/
+lemma legendre_neg_mul {a : ℤ} (h : a ≤ 0)
   : legendreSym p a = (legendreSym p (-1)) * (legendreSym p (a.natAbs)) := by
     have : a = -1 * -a := by simp only [mul_neg, neg_mul, one_mul, neg_neg]
     nth_rewrite 1 [this]
@@ -17,7 +43,9 @@ lemma legendre_neg_mul (p : ℕ) [hp : Fact p.Prime] (h : a ≤ 0)
     rw [this]
     exact legendreSym.mul p (-1) a.natAbs
 
-lemma natAbs_legendre_eq_prod_factors (p : ℕ) [hp : Fact p.Prime] {a : ℤ} (h : a ≠ 0)
+/-- for any integer `a`, the Legendre Symbol of its `a.natAbs` is equivalent to taking
+  the `Legendre Symbols` of all prime factors, and then multiplying them-/
+lemma natAbs_legendre_eq_prod_factors {a : ℤ} (h : a ≠ 0)
   : legendreSym p a.natAbs
       = List.prod (a.natAbs.factors.pmap (fun q _ => @legendreSym p _ q) (fun _ _ => hp)):= by
   nth_rewrite 1 [←  prod_factors (natAbs_ne_zero.mpr h)]
@@ -30,10 +58,13 @@ lemma natAbs_legendre_eq_prod_factors (p : ℕ) [hp : Fact p.Prime] {a : ℤ} (h
     rw [←c, ←legendreSym.mul]
     congr
 
-def legendreSym_of_factors_list (p : ℕ) [Fact p.Prime] (a : ℤ) : List ℤ :=
+/--A list depending on `a : ℤ` containing the `Legendre Symbols` of all prime factors of `a.natAbs`-/
+def legendreSym_of_factors_list  (a : ℤ) : List ℤ :=
   map (fun a => legendreSym p a) a.natAbs.factors
 
-def legendreSym_of_reciprocity_map (p : ℕ) [Fact p.Prime] (a : ℤ) : List ℤ :=
+/--A list depending on `a : ℤ` containing the Legendre Symbols of all prime factors of `a.natAbs`.
+  However, the Legendre Symbol is computed using `quadratic reciprocity` -/
+def legendreSym_of_reciprocity_map  (a : ℤ) : List ℤ :=
   pmap (fun q hq =>
           if q = 2 then χ₈ p
           else
@@ -41,6 +72,7 @@ def legendreSym_of_reciprocity_map (p : ℕ) [Fact p.Prime] (a : ℤ) : List ℤ
             (-1) ^ (q / 2 * (p / 2)) * legendreSym q p) a.natAbs.factors (fun _ x => x)
 
 variable {p : ℕ} [Fact p.Prime] in
+/-- `legendreSym_of_factors_list` is the same list as `legendreSym_of_reciprocity_map`-/
 lemma factors_list_eq_reciprocity_map (a : ℤ) (hp' : p ≠ 2)
   : legendreSym_of_factors_list p a = legendreSym_of_reciprocity_map p a := by
       apply List.ext
@@ -65,6 +97,7 @@ lemma factors_list_eq_reciprocity_map (a : ℤ) (hp' : p ≠ 2)
           case pos h => rw [h] ; exact legendreSym.at_two hp'
           case neg h => exact quadratic_reciprocity' h hp'
 
+/--A `recursive` algorithm that computes the `Legendre Symbol` of a positive integer-/
 def reciprocity_recursion (p : ℕ) [hp : Fact p.Prime] (a : ℕ) : ℤ :=
     if _ : a = 0 then 0
     else if _ : p = 2 then legendreSym p (a % p)
@@ -80,11 +113,13 @@ decreasing_by
   simp_wf
   exact Nat.lt_of_lt_of_le (mod_lt p Fin.size_pos') (le_of_mem_factors hq)
 
-def reciprocity_recursion' (p : ℕ) [Fact p.Prime] (a : ℤ) : ℤ :=
+/--A `recursive` algorithm that computes the `Legendre Symbol` of `any` integer-/
+def reciprocity_recursion' (a : ℤ) : ℤ :=
   if _ : p = 2 then legendreSym p (a % p)
   else if _ : a < 0 then (χ₄ p) * (reciprocity_recursion p a.natAbs)
   else (reciprocity_recursion p a.natAbs)
 
+/-- A proof that `reciprocity_recursion` is in fact the `Legendre Symbol` -/
 lemma reciprocity_recursion_eq_legendreSym (p : ℕ) [hp : Fact p.Prime] (a : ℕ) :
   reciprocity_recursion p a = legendreSym p a := by
     unfold reciprocity_recursion
@@ -107,6 +142,7 @@ decreasing_by
   simp_wf
   apply Nat.lt_of_lt_of_le (mod_lt p (pos_of_mem_factors hx)) (le_of_mem_factors hx)
 
+/-- A more general proof that `reciprocity_recursion` is in fact the `Legendre Symbol` -/
 @[csimp]
 lemma reciprocity_recursion_eq_legendreSym' :
   @reciprocity_recursion' = @legendreSym := by
