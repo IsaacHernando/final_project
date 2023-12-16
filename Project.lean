@@ -30,7 +30,7 @@ open legendreSym Nat Int List ZMod
 lemma pos_eq_natAbs {a : ℤ} (h : a ≥ 0) : a = a.natAbs := by
   cases a
   simp only [ofNat_eq_coe, natAbs_ofNat]
-  norm_cast at h
+  norm_cast
 
 variable (p : ℕ) [hp : Fact p.Prime]
 
