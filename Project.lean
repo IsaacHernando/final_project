@@ -12,13 +12,13 @@ This file contains a recursive algorithm to compute the Legendre Symbol,
   `reciprocity_recursion_eq_legendreSym'`.
 
 For a fixed integer `a` and a prime `p`, it is also proven that mapping each `q ∈ a.natAbs.factors`
-to `legendreSym p q` is the same as mapping each `q ∈ a.natAbs.factors` to `(-1) ^ (q / 2 * (p / 2)) * legendreSym q p`
-(via quadratic reciprocity).
+to `legendreSym p q` is the same as mapping each `q ∈ a.natAbs.factors`
+to `(-1) ^ (q / 2 * (p / 2)) * legendreSym q p` (via quadratic reciprocity).
 
 ## Implementation notes
-The proofs use results for computing Legendre Symbols at `-1` and `2` from
-`Mathlib.NumberTheory.LegendreSymbol.QuadraticReciprocity`. That is, it is used that `legendreSym p 2 = χ₈ p` and
-`legendreSym p (-1) = χ₄ p`.
+We use results for computing Legendre Symbols at `-1` and `2` from
+`Mathlib.NumberTheory.LegendreSymbol.QuadraticReciprocity`. More specifically, we use that
+`legendreSym p 2 = χ₈ p` and `legendreSym p (-1) = χ₄ p`.
 
 ## References
 1. Mathlib
